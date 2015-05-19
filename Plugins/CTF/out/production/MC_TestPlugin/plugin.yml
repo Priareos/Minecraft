@@ -1,0 +1,12 @@
+name: BestPlugin
+version: 0.1
+author: Mike
+main: me.Mike.BestIn.BestClass
+commands:
+        Best:
+               description: Good Things.
+               usage: /Best
+
+        Team:
+               description: Adds player to team.
+
