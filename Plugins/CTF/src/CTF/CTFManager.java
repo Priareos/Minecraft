@@ -4,23 +4,29 @@ import CTF.Arena.ArenaManager;
 import CTF.Teams.Team;
 import CTF.Teams.TeamManager;
 import CTF.Teams.TeamMember;
-import org.bukkit.Material;
-import org.bukkit.Server;
-import org.bukkit.World;
+import javafx.scene.layout.Priority;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.Location;
+
 import java.lang.reflect.Member;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 /**
@@ -42,6 +48,8 @@ public class CTFManager extends JavaPlugin implements Listener
 
     private boolean enableCTF = false;
     private boolean initializingCTF = false;
+    private boolean CTFGameInProgress = false;
+
 
     @Override
     public void onEnable() {
@@ -131,18 +139,20 @@ public class CTFManager extends JavaPlugin implements Listener
         Flag flagBlue = AM.GetFlag("blue");
         for (TeamMember memberR : TM.TeamRed.members)
         {
-            TeleportPlayers(flagRed, memberR);
+            TeleportPlayers(flagRed, memberR, false);
         }
         for (TeamMember memberB : TM.TeamBlue.members)
         {
-            TeleportPlayers(flagBlue, memberB);
+            TeleportPlayers(flagBlue, memberB, false);
         }
+        CTFGameInProgress = true;
     }
 
-    private void TeleportPlayers (Flag flag, TeamMember member) {
+    private void TeleportPlayers (Flag flag, TeamMember member, boolean respawn) {
         Player p = member.GetPlayer();
         World w = p.getWorld();
         boolean canTeleport = false;
+        Location l = p.getLocation();
         for(double x = -2; x <= 2; x++ )
         {
             for(double z = -2; z <= 2; z++ )
@@ -152,17 +162,18 @@ public class CTFManager extends JavaPlugin implements Listener
                     Location loc = new Location(w, flag.GetLocation().getX() + x, flag.GetLocation().getY() + y, flag.GetLocation().getZ() + z);
                     Block b = w.getBlockAt(loc);
                     if (b.getType() == Material.AIR) {
-                        Location l = b.getLocation();
-                        l.add(0,1,0);
-                        member.TeleportToStartLocation(l);
+                        l = b.getLocation();
+                        l.add(0, 1, 0);
+
                         canTeleport = true;
-                        break;
                     }
                 }
 
             }
         }
+        if(canTeleport) member.TeleportToStartLocation(l, respawn);
         if(!canTeleport)serv.broadcastMessage("Can't teleport " + member.GetPlayerName() + "! no space available");
+        else serv.broadcastMessage("Teleporting");
     }
 
     public void EndCTF()
@@ -176,6 +187,10 @@ public class CTFManager extends JavaPlugin implements Listener
         {
             memberB.TeleportToOriginalLocation();
         }
+
+        enableCTF = false;
+        CTFGameInProgress = false;
+
     }
 
     public static Server ReturnServer()
@@ -197,5 +212,71 @@ public class CTFManager extends JavaPlugin implements Listener
         Player p = getServer().getPlayerExact(event.getWhoClicked().getName());
         if ((event.getSlotType().equals(InventoryType.SlotType.ARMOR) && !event.getCurrentItem().getType().equals(Material.AIR))&&TM.GetPlayerTeam(p) != null)
             event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerRespawn(PlayerRespawnEvent event)
+    {
+        if(CTFGameInProgress)
+        {
+            final Player p = event.getPlayer();
+            if (TM.GetPlayerTeam(p) != null)
+            {
+                Team team = TM.GetPlayerTeam(p);
+
+                final Flag f = AM.GetFlag(team.name);
+                serv.broadcastMessage("Respawned " + team.name + " " + f.getTeamName());
+                final TeamMember memb = team.GetMember(p);
+                final CTFManager ctfmanager = this;
+                memb.Equip(team.color);
+
+                @SuppressWarnings("unused") int taskId= Bukkit.getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
+                    @Override public void run()
+                    {
+                        TeleportPlayers(f, memb, true);
+                    }
+                }
+                        ,10L);
+
+
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onPlayerDeath(PlayerDeathEvent event)
+    {
+        ArrayList<ItemStack> itemsToRemove = new ArrayList();
+
+        World w = event.getEntity().getWorld();
+        Block blockAtDeathLoc = w.getBlockAt(event.getEntity().getLocation());
+
+       for(ItemStack drop : event.getDrops())
+       {
+           if(drop.getType() == Material.WOOL)
+           {
+               MaterialData md = drop.getData();
+               itemsToRemove.add(drop);
+               blockAtDeathLoc.setType(Material.WOOL);
+               blockAtDeathLoc.setData(md.getData());
+           }
+           else if(drop.getType() == Material.LEATHER_BOOTS
+                   || drop.getType() == Material.LEATHER_CHESTPLATE
+                   || drop.getType() == Material.LEATHER_LEGGINGS
+                   || drop.getType() == Material.LEATHER_HELMET
+                   || drop.getType() == Material.IRON_SWORD
+                   || drop.getType() == Material.DIAMOND_AXE
+                   || drop.getType() == Material.DIAMOND_SPADE
+                   || drop.getType() == Material.DIAMOND_PICKAXE
+                   )
+           {
+               itemsToRemove.add(drop);
+           }
+       }
+
+        for(ItemStack is : itemsToRemove)
+        {
+            event.getDrops().remove(is);
+        }
     }
 }
