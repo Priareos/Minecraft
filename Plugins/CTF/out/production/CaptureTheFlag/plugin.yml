@@ -6,3 +6,5 @@ main: CTF.CTFManager
 commands:
          CTF:
                description: Launch Capture the Flags.
+         Bomberman:
+               description: Bomberman plugin allows you to pickup bombs which can be planted on the ground and will explode.
