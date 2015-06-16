@@ -1,17 +1,11 @@
 package CTF.Teams;
 
 import CTF.CTFManager;
-import org.apache.logging.log4j.core.pattern.AbstractStyleNameConverter;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.lang.reflect.Member;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -26,9 +20,7 @@ public class TeamManager  {
 
     //@Override
     public void onEnable() {
-        //super.onEnable();
 
-        //getLogger().info("onEnable has been invoked!");
         TeamBlue.ResetMembers();
         TeamRed.ResetMembers();
     }
@@ -36,33 +28,60 @@ public class TeamManager  {
 
     public boolean executeCommand(CommandSender sender, Command command, String label, String[] args)
     {
-        if(command.getName().equalsIgnoreCase("Team"))
-        {
-            if(args[0].equalsIgnoreCase("Join"))
+            if(args[1].equalsIgnoreCase("Join"))
             {
                 JoinTeam(sender, args);
+                return true;
             }
-            else if(args[0].equalsIgnoreCase("Members"))
+            else if(args[1].equalsIgnoreCase("Members"))
             {
                 ShowMemberNames(sender,args);
+                return true;
             }
-            else if(args[0].equalsIgnoreCase("Info"))
+            else if(args[1].equalsIgnoreCase("Info"))
             {
                 ShowPlayerInfo(sender,args);
+                return true;
             }
-            else if(args[0].equalsIgnoreCase("Leave"))
+            else if(args[1].equalsIgnoreCase("Leave"))
             {
                 LeaveTeam(sender);
+                return true;
             }
             else
+            {
+                sender.sendMessage("Usage: /CTF Team [Join | Leave | Members]");
+                sender.sendMessage("Join [Red | Blue] - Join a team");
+                sender.sendMessage("Leave - Leave your team");
+                sender.sendMessage("Members [Red | Blue] - Shows all team members");
                 return false;
-        }
-            return false;
+            }
+
     }
 
     private boolean JoinTeam(CommandSender sender, String[] args)
     {
-            if (args[1].equalsIgnoreCase("Blue"))
+        if (args.length < 3)
+        {
+            if(GetPlayerTeam((Player)sender) == null)
+            {
+                TeamMember member = new TeamMember((Player) sender);
+
+                if (TeamRed.members.size() > TeamBlue.members.size())
+                {
+                    return AssignToTeam(TeamRed, member);
+                } else if (TeamRed.members.size() < TeamBlue.members.size())
+                {
+                    return AssignToTeam(TeamBlue, member);
+                } else
+                {
+                    int rndNum = randInt(0, 1);
+                    Team rndTeam = rndNum == 1 ? TeamBlue : TeamRed;
+                    return AssignToTeam(rndTeam, member);
+                }
+
+            }
+            else if (args[2].equalsIgnoreCase("Blue"))
             {
                 if(GetPlayerTeam((Player)sender) == null)
                 {
@@ -86,7 +105,7 @@ public class TeamManager  {
                 }
 
             }
-            else if (args[1].equalsIgnoreCase("Red"))
+            else if (args[2].equalsIgnoreCase("Red"))
             {
                 if(GetPlayerTeam((Player)sender) == null)
                 {
@@ -109,26 +128,6 @@ public class TeamManager  {
                     return false;
                 }
             }
-            else if (args[1].equalsIgnoreCase("Auto"))
-            {
-                if(GetPlayerTeam((Player)sender) == null)
-                {
-                    TeamMember member = new TeamMember((Player) sender);
-
-                    if (TeamRed.members.size() > TeamBlue.members.size())
-                    {
-                        return AssignToTeam(TeamRed, member);
-                    } else if (TeamRed.members.size() < TeamBlue.members.size())
-                    {
-                        return AssignToTeam(TeamBlue, member);
-                    } else
-                    {
-                        int rndNum = randInt(0, 1);
-                        Team rndTeam = rndNum == 1 ? TeamBlue : TeamRed;
-                        return AssignToTeam(rndTeam, member);
-                    }
-
-                }
                 else
                 {
                     String s = ChatColor.DARK_PURPLE + "Already joined a team!";
@@ -138,13 +137,14 @@ public class TeamManager  {
             }
             else
             {
-                sender.sendMessage("Invalid Team!");
+                String s = ChatColor.DARK_PURPLE + "Invalid Command!";
+                sender.sendMessage(s);
                 return false;
             }
     }
     private boolean ShowMemberNames(CommandSender sender, String[] args)
     {
-        if (args[1].equalsIgnoreCase("Blue"))
+        if (args[2].equalsIgnoreCase("Blue"))
         {
             for(Iterator<String> i = TeamBlue.GetMemberNames().iterator(); i.hasNext(); )
             {
@@ -153,7 +153,7 @@ public class TeamManager  {
             }
             return true;
         }
-        else if (args[1].equalsIgnoreCase("Red"))
+        else if (args[2].equalsIgnoreCase("Red"))
         {
             for(Iterator<String> i = TeamRed.GetMemberNames().iterator(); i.hasNext(); ) {
                 String membername = i.next();
@@ -211,7 +211,7 @@ public class TeamManager  {
     private boolean AssignToTeam(Team t, TeamMember member)
     {
         member.Equip(t.color);
-        TeamBlue.AddMember(member);
+        t.AddMember(member);
         ChatColor c;
         CTFManager.ReturnServer().broadcastMessage(member.GetPlayerName() + " " + "Joined Team " + t.name + "!");
         return true;

@@ -5,9 +5,4 @@ main: CTF.CTFManager
 
 commands:
          CTF:
-               description: Launch Capture the Flag.
-         Team:
-               description: Adds player to team.
-         Arena:
-               description: Arena Stuff.
-
+               description: Launch Capture the Flags.
