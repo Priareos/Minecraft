@@ -13,7 +13,6 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.*;
 import org.bukkit.util.Vector;
-import org.json.simple.JSONObject;
 
 import java.util.*;
 

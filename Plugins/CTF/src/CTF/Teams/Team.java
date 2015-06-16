@@ -1,5 +1,4 @@
 package CTF.Teams;
-import CTF.JsonWriter;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
 

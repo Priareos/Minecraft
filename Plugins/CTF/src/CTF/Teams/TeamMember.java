@@ -3,9 +3,7 @@ package CTF.Teams;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
@@ -83,15 +81,19 @@ public class TeamMember {
         player.getInventory().setContents(inventoryContents);
     }
 
-    public void TeleportToStartLocation(Location startLocation)
+    public void TeleportToStartLocation(Location startLocation, boolean respawn)
     {
-        SaveInventory();
-        EmptyInventory();
-        GiveCTFInventory();
-        SetFullHealth();
-        savedLocation = player.getLocation();
+        if(!respawn)
+        {
+            SaveInventory();
+            EmptyInventory();
+            GiveCTFMaterials();
+            savedLocation = player.getLocation();
+        }
 
+        GiveCTFEquipment();
         player.teleport(startLocation);
+        SetFullHealth();
     }
 
     public void TeleportToOriginalLocation()
@@ -100,9 +102,9 @@ public class TeamMember {
         player.teleport(savedLocation);
     }
 
-    public void GiveCTFInventory()
+    public void GiveCTFMaterials()
     {
-        List<ItemStack> is = SetCTFInventory();
+        List<ItemStack> is = GetCTFMaterials();
 
         for(ItemStack i : is)
         {
@@ -113,7 +115,19 @@ public class TeamMember {
 
     }
 
-    public List<ItemStack> SetCTFInventory()
+    public void GiveCTFEquipment()
+    {
+        List<ItemStack> is = GetCTFEquipment();
+        for(ItemStack i : is)
+        {
+            player.getInventory().addItem(i);
+        }
+
+        player.updateInventory();
+
+    }
+
+    public List<ItemStack> GetCTFEquipment()
     {
         List<ItemStack> stack = new ArrayList<>();
 
@@ -121,6 +135,15 @@ public class TeamMember {
         stack.add(new ItemStack(Material.DIAMOND_AXE, 1));
         stack.add(new ItemStack(Material.DIAMOND_SPADE, 1));
         stack.add(new ItemStack(Material.DIAMOND_PICKAXE, 1));
+
+        return stack;
+    }
+
+
+    public List<ItemStack> GetCTFMaterials()
+    {
+        List<ItemStack> stack = new ArrayList<>();
+
         stack.add(new ItemStack(Material.STONE, 64));
         stack.add(new ItemStack(Material.WOOD, 64));
         return stack;
