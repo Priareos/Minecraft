@@ -80,9 +80,10 @@ public class TeamManager  {
                     return AssignToTeam(rndTeam, member);
                 }
 
-            }
-            else if (args[2].equalsIgnoreCase("Blue"))
-            {
+            }else return false;
+        }
+        else if (args[2].equalsIgnoreCase("Blue"))
+        {
                 if(GetPlayerTeam((Player)sender) == null)
                 {
                     if(TeamRed.members.size() + 2 > TeamBlue.members.size())
@@ -104,9 +105,9 @@ public class TeamManager  {
                     return false;
                 }
 
-            }
-            else if (args[2].equalsIgnoreCase("Red"))
-            {
+        }
+        else if (args[2].equalsIgnoreCase("Red"))
+        {
                 if(GetPlayerTeam((Player)sender) == null)
                 {
                     if(TeamBlue.members.size() + 2 > TeamRed.members.size())
@@ -127,14 +128,8 @@ public class TeamManager  {
                     sender.sendMessage(s);
                     return false;
                 }
-            }
-                else
-                {
-                    String s = ChatColor.DARK_PURPLE + "Already joined a team!";
-                    sender.sendMessage(s);
-                    return false;
-                }
-            }
+
+        }
             else
             {
                 String s = ChatColor.DARK_PURPLE + "Invalid Command!";
