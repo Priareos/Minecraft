@@ -5,9 +5,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.material.Wool;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Michael on 5/26/2015.
@@ -25,6 +28,7 @@ public class Flag
 
     private String teamName;
 
+    private List<Location> plantArea = new ArrayList<Location>();
 
     public Flag(DyeColor c, String name)
     {
@@ -81,6 +85,7 @@ public class Flag
     private void PlantAtLocation(Location l, World w)
     {
         savedBlocks.clear();
+        plantArea.clear();
 
         for(double x = -1; x <= 1; x++ )
         {
@@ -93,6 +98,8 @@ public class Flag
                     savedBlocks.put(loc, loc.getBlock().getType());
                     Block b = w.getBlockAt(loc);
                     b.setType(Material.AIR);
+                    plantArea.add(loc);
+                    w.getPlayers().get(0).sendMessage(loc.toString());
                 }
             }
         }
@@ -128,6 +135,38 @@ public class Flag
             }
         }
 
+    }
+
+    public boolean CheckLocations(Location l)
+    {
+        boolean retVal = false;
+
+        for(Location location : plantArea)
+        {
+            if(location == l)
+            {
+                retVal = true;
+            }
+        }
+        return retVal;
+    }
+
+    public boolean CheckBlocks(World w, DyeColor dyeColor)
+    {
+        boolean retVal = false;
+
+        for(Location location : plantArea)
+        {
+            w.getPlayers().get(0).sendMessage(w.getBlockAt(location).getType().name());
+            Block b = w.getBlockAt(location);
+            if(b.getState().getData() instanceof Wool)
+            {
+                DyeColor color = ((Wool) b.getState().getData()).getColor();
+                if (color == dyeColor)
+                    retVal = true;
+            }
+        }
+        return retVal;
     }
 
     public void RemoveOldFlag()

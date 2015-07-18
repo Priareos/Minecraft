@@ -37,6 +37,7 @@ public class CTFManager extends JavaPlugin implements Listener
     public static Logger log = Logger.getLogger("Minecraft");
     private TeamManager TM;
     private ArenaManager AM;
+    private ScoreSystem SCRSYS;
 
     public static Server serv;
 
@@ -44,6 +45,7 @@ public class CTFManager extends JavaPlugin implements Listener
     {
         TM = new TeamManager();
         AM = new ArenaManager();
+        SCRSYS = new ScoreSystem(this, TM, AM);
     }
 
     private boolean enableCTF = false;
@@ -58,6 +60,7 @@ public class CTFManager extends JavaPlugin implements Listener
         TM.onEnable();
         serv = getServer();
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(SCRSYS,this);
     }
 
     @Override
@@ -146,6 +149,7 @@ public class CTFManager extends JavaPlugin implements Listener
             TeleportPlayers(flagBlue, memberB, false);
         }
         CTFGameInProgress = true;
+        SCRSYS.SetCheckScore(true);
     }
 
     private void TeleportPlayers (Flag flag, TeamMember member, boolean respawn) {
