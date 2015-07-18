@@ -4,6 +4,9 @@
 
 ## Directory-based project format:
 .idea/
+/server
+/runtime
+/game
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
@@ -44,3 +47,7 @@ atlassian-ide-plugin.xml
 com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
+
+Minecraft.exe
+nativelog.txt
+bukkit-1.8.3.jar
