@@ -1,6 +1,7 @@
 package CTF;
 
 import CTF.Arena.ArenaManager;
+import CTF.MiniPlugins.Bomberman;
 import CTF.Teams.Team;
 import CTF.Teams.TeamManager;
 import CTF.Teams.TeamMember;
@@ -38,7 +39,7 @@ public class CTFManager extends JavaPlugin implements Listener
     private TeamManager TM;
     private ArenaManager AM;
     private ScoreSystem SCRSYS;
-
+    private Bomberman BM;
     public static Server serv;
 
     public CTFManager()
@@ -46,6 +47,7 @@ public class CTFManager extends JavaPlugin implements Listener
         TM = new TeamManager();
         AM = new ArenaManager();
         SCRSYS = new ScoreSystem(this, TM, AM);
+        BM = new Bomberman(this);
     }
 
     private boolean enableCTF = false;
@@ -112,7 +114,23 @@ public class CTFManager extends JavaPlugin implements Listener
                 return false;
             }
         }
-        else
+        else if(command.getName().equalsIgnoreCase("Bomberman"))
+        {
+            if (args[0].equalsIgnoreCase("Enable"))
+            {
+                BM.EnableDisable(TM, true);
+                return true;
+            }
+            else if (args[1].equalsIgnoreCase("Disable"))
+            {
+                BM.EnableDisable(TM, false);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
             return false;
 
     }

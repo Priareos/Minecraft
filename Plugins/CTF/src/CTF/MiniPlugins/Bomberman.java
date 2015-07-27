@@ -1,70 +1,101 @@
 package CTF.MiniPlugins;
 
+import CTF.CTFManager;
+import CTF.Teams.Team;
+import CTF.Teams.TeamManager;
+import CTF.Teams.TeamMember;
+import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.DyeColor;
+import org.bukkit.material.Wool;
 
-import java.util.logging.Logger;
 
 /**
  * Created by Scyther on 16.06.2015.
  */
-public class Bomberman extends JavaPlugin implements Listener
+public class Bomberman implements Listener
 {
-        public static Logger log = Logger.getLogger("Minecraft");
+    private CTFManager CTFM;
+    private TeamManager TM;
+    private int schedulerID;
 
-        public static Server serv;
+    public Bomberman(CTFManager C)
+    {
+        CTFM = C;
+    }
 
-        @Override
-        public void onEnable()
+    public void EnableDisable(TeamManager teamMngr, boolean enable)
+    {
+        TM = teamMngr;
+        if (enable == true)
         {
-            log.info("[Bomberman] has been loaded");
-            serv = getServer();
-            getServer().getPluginManager().registerEvents(this, this);
-        }
-
-        @Override
-        public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
-        {
-            if(command.getName().equalsIgnoreCase("Bomberman"))
+            CTFManager.serv.broadcastMessage("Bomberman is active");
+            schedulerID =  CTFManager.serv.getScheduler().scheduleAsyncRepeatingTask(CTFM, new Runnable()
             {
-                if (args[0].equalsIgnoreCase("Enable"))
-                {
-                    Bomberman(true, (Player) sender);
-                    return true;
-                }
-                else if (args[0].equalsIgnoreCase("Disable"))
-                {
-                    Bomberman(false, (Player) sender);
-                    return true;
-                }
-                else
-                {
-                    sender.sendMessage("Usage: /Bomberman [Enable/Disable]]");
-                    return false;
-                }
-            }
-            else
-                return false;
-        }
+                Wool wool = new Wool(DyeColor.ORANGE);
+                ItemStack stack = wool.toItemStack(1);
 
-        private void Bomberman(boolean enable, Player p)
-        {
+                public void run()
+                {
+                    CTFManager.serv.broadcastMessage("NewBombs!");
+                    for(Player p :  CTFManager.serv.getOnlinePlayers())
+                    {
+                        p.getInventory().addItem(stack);
+                    }
+                }
+            }, 200L, 200L);
+        }
+        else
+            CTFManager.serv.getScheduler().cancelTask(schedulerID);
+            CTFManager.serv.broadcastMessage("Bomberman is inactive");
+    }
+
+    public void onBlockPlace(BlockPlaceEvent event)
+    {
+            Player p = event.getPlayer();
             World w = p.getWorld();
+            int bombRange = 10;
+            Block block = event.getBlock();
 
-            if (enable == true)
+            p.sendMessage(event.getBlock().getType().name());
+            Block b;
 
+            if (block.getState().getData() instanceof Wool)
+            {
+                DyeColor color = ((Wool) block.getState().getData()).getColor();
+                if (color == DyeColor.ORANGE)
+                {
+                    for (int x = 1; x < bombRange; x++)
+                    {
+                        for (int y = 1; y < bombRange; x++)
+                        {
+                            for (int z = 1; z < bombRange; x++)
+                            {
+                                b = w.getBlockAt(x, (int)block.getLocation().getY(), (int)block.getLocation().getZ());
+                                if(b.getType() != Material.AIR ){
+                                    b.setType(Material.AIR);                                }
 
+                                b = w.getBlockAt((int)block.getLocation().getX(), y, (int)block.getLocation().getZ());
+                                if(b.getType() != Material.AIR ){
+                                    b.setType(Material.AIR);
+                                }
+                                b = w.getBlockAt((int) block.getLocation().getX(), (int) block.getLocation().getY(), z);
+                                if(b.getType() != Material.AIR ){
+                                    b.setType(Material.AIR);
+                                }
+//                                w.getBlockAt((int)block.getLocation().getX(), y, (int)block.getLocation().getZ()).setType(Material.AIR);
+//                                w.getBlockAt((int)block.getLocation().getX(), (int)block.getLocation().getY(), z).setType(Material.AIR);
+                            }
+                        }
 
-
-                serv.broadcastMessage("Bomberman is active");
-            else
-                serv.broadcastMessage("Bomberman is inactive");
+                    }
+                }
         }
+    }
 }
