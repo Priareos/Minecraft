@@ -99,7 +99,6 @@ public class Flag
                     Block b = w.getBlockAt(loc);
                     b.setType(Material.AIR);
                     plantArea.add(loc);
-                    w.getPlayers().get(0).sendMessage(loc.toString());
                 }
             }
         }
@@ -157,7 +156,6 @@ public class Flag
 
         for(Location location : plantArea)
         {
-            w.getPlayers().get(0).sendMessage(w.getBlockAt(location).getType().name());
             Block b = w.getBlockAt(location);
             if(b.getState().getData() instanceof Wool)
             {

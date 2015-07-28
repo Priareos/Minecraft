@@ -46,8 +46,8 @@ public class CTFManager extends JavaPlugin implements Listener
     {
         TM = new TeamManager();
         AM = new ArenaManager();
-        SCRSYS = new ScoreSystem(this, TM, AM);
         BM = new Bomberman(this);
+        SCRSYS = new ScoreSystem(this, TM, AM, BM);
     }
 
     private boolean enableCTF = false;

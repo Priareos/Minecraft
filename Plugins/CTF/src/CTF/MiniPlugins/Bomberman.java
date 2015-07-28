@@ -1,20 +1,17 @@
 package CTF.MiniPlugins;
 
 import CTF.CTFManager;
-import CTF.Teams.Team;
 import CTF.Teams.TeamManager;
-import CTF.Teams.TeamMember;
-import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.DyeColor;
 import org.bukkit.material.Wool;
-
 
 /**
  * Created by Scyther on 16.06.2015.
@@ -52,50 +49,102 @@ public class Bomberman implements Listener
             }, 200L, 200L);
         }
         else
+        {
             CTFManager.serv.getScheduler().cancelTask(schedulerID);
             CTFManager.serv.broadcastMessage("Bomberman is inactive");
+        }
     }
 
-    public void onBlockPlace(BlockPlaceEvent event)
+    public void BombHasBeenPlaced(BlockPlaceEvent event)
     {
-            Player p = event.getPlayer();
-            World w = p.getWorld();
-            int bombRange = 10;
-            Block block = event.getBlock();
+        Player p = event.getPlayer();
+        World w = p.getWorld();
+        int bombRange = 10;
+        Block block = event.getBlock();
+        Player pKill;
 
-            p.sendMessage(event.getBlock().getType().name());
-            Block b;
+        p.sendMessage(event.getBlock().getType().name());
+        Block b = event.getBlock();
+        w.createExplosion(b.getLocation(), 1f, true);
 
-            if (block.getState().getData() instanceof Wool)
+        for (int x = 1; x < bombRange; x++)
+        {
+            for (int y = 1; y < bombRange; y++)
             {
-                DyeColor color = ((Wool) block.getState().getData()).getColor();
-                if (color == DyeColor.ORANGE)
+                for (int z = 1; z < bombRange; z++)
                 {
-                    for (int x = 1; x < bombRange; x++)
+                    b = w.getBlockAt((int)block.getLocation().getX() + x, (int)block.getLocation().getY() + y, (int)block.getLocation().getZ());
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
                     {
-                        for (int y = 1; y < bombRange; x++)
-                        {
-                            for (int z = 1; z < bombRange; x++)
-                            {
-                                b = w.getBlockAt(x, (int)block.getLocation().getY(), (int)block.getLocation().getZ());
-                                if(b.getType() != Material.AIR ){
-                                    b.setType(Material.AIR);                                }
-
-                                b = w.getBlockAt((int)block.getLocation().getX(), y, (int)block.getLocation().getZ());
-                                if(b.getType() != Material.AIR ){
-                                    b.setType(Material.AIR);
-                                }
-                                b = w.getBlockAt((int) block.getLocation().getX(), (int) block.getLocation().getY(), z);
-                                if(b.getType() != Material.AIR ){
-                                    b.setType(Material.AIR);
-                                }
-//                                w.getBlockAt((int)block.getLocation().getX(), y, (int)block.getLocation().getZ()).setType(Material.AIR);
-//                                w.getBlockAt((int)block.getLocation().getX(), (int)block.getLocation().getY(), z).setType(Material.AIR);
-                            }
-                        }
-
+                        pKill.setHealth(0);
+                    }
+                    b = w.getBlockAt((int)block.getLocation().getX(), (int)block.getLocation().getY() + y, (int)block.getLocation().getZ() + z);
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
+                    {
+                        pKill.setHealth(0);
+                    }
+                    b = w.getBlockAt((int)block.getLocation().getX() + x, (int)block.getLocation().getY() - y, (int)block.getLocation().getZ());
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
+                    {
+                        pKill.setHealth(0);
+                    }
+                    b = w.getBlockAt((int)block.getLocation().getX(), (int)block.getLocation().getY() - y, (int)block.getLocation().getZ() + z);
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
+                    {
+                        pKill.setHealth(0);
+                    }
+                    b = w.getBlockAt((int)block.getLocation().getX() - x, (int)block.getLocation().getY() + y, (int)block.getLocation().getZ());
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
+                    {
+                        pKill.setHealth(0);
+                    }
+                    b = w.getBlockAt((int)block.getLocation().getX(), (int)block.getLocation().getY() + y, (int)block.getLocation().getZ() - z);
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
+                    {
+                        pKill.setHealth(0);
+                    }
+                    b = w.getBlockAt((int)block.getLocation().getX() - x, (int)block.getLocation().getY() - y, (int)block.getLocation().getZ());
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
+                    {
+                        pKill.setHealth(0);
+                    }
+                    b = w.getBlockAt((int)block.getLocation().getX(), (int)block.getLocation().getY() - y, (int)block.getLocation().getZ() - z);
+                    b.setType(Material.AIR);
+                    pKill = getPlayerAt(b.getLocation(), w, b);
+                    if (pKill != null)
+                    {
+                        pKill.setHealth(0);
                     }
                 }
+//                        CTFManager.serv.broadcastMessage("Bombing");
+            }
         }
+    }
+
+    public Player getPlayerAt(org.bukkit.Location loc, World w, Block b)
+    {
+        for (Entity e : w.getChunkAt(b).getEntities()) {
+            if (e instanceof Player)
+                if ((e.getLocation().getX() >= loc.getX() - 0.5 && e.getLocation().getX() <= loc.getX() + 0.5) &&
+                        (e.getLocation().getY() >= loc.getY() - 0.5 && e.getLocation().getY() <= loc.getY() + 0.5) &&
+                        (e.getLocation().getZ() >= loc.getZ() - 0.5 && e.getLocation().getZ() <= loc.getZ() + 0.5)) {
+                    return (Player) e;
+                }
+        }
+        return null;
     }
 }
